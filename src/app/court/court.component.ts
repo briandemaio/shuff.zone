@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import * as d3 from 'd3';
-import * as geometric from 'geometric';
-import { Selection, zoom } from 'd3';
+import { Selection, zoom, ZoomBehavior } from 'd3';
 
 @Component({
   selector: 'app-court',
@@ -9,13 +8,7 @@ import { Selection, zoom } from 'd3';
   styleUrls: ['./court.component.scss']
 })
 export class CourtComponent implements OnInit {
-  // private data = [
-  //   {"Framework": "Vue", "Stars": "166443", "Released": "2014"},
-  //   {"Framework": "React", "Stars": "150793", "Released": "2013"},
-  //   {"Framework": "Angular", "Stars": "62342", "Released": "2016"},
-  //   {"Framework": "Backbone", "Stars": "27647", "Released": "2010"},
-  //   {"Framework": "Ember", "Stars": "21471", "Released": "2011"},
-  // ];
+
   private tenOff: { x: number, y: number }[] = [
     { x: 0, y: 0 },
     { x: 6, y: 0 },
@@ -56,62 +49,130 @@ export class CourtComponent implements OnInit {
     { x: 4, y: 7.5 },
     { x: 3, y: 10.5 }
   ];
-  
+
+  private scaleFactor = 50;
 
   private svg: Selection<any, any, any, any>;
+  private discLayer: Selection<SVGGElement, any, any, any>;
+  private blockLayer: Selection<SVGGElement, any, any, any>;
+  private courtLayer: Selection<SVGGElement, any, any, any>;
   private margin = 50;
   private width = 750 - (this.margin * 2);
   private height = 800 - (this.margin * 2);
+
+  private zoom;
+
+  private discs: any[] = [];
   constructor() { }
 
   ngOnInit(): void {
-    d3.zoom()
-      .on('zoom', this.handleZoom);
+    this.zoom = d3.zoom()
+      .on('zoom', this.handleZoom.bind(this));
     this.createSvg();
     // this.drawBars(this.data);
     this.drawCourt();
   }
 
+  addDisc(yellow = true) {
+    const radius = (3/12) * this.scaleFactor;
+    const disc = this.discLayer.append('circle')
+      .attr('cx', '40px')
+      .attr('cy', '40px')
+      // 6 inch disc
+      .attr('r', radius)
+      .style('fill', yellow ? 'yellow' : 'black')
+      .style('cursor', 'pointer')
+      // .style('stroke-width', radius)
+      // .style('stroke', '#FFBA01')
+      .call(d3.drag<SVGCircleElement, unknown>()
+      .on('drag', this.dragged)
+      .on('start', this.dragStarted)
+      .on('end', this.dragEnded));
+
+      disc.on('dblclick', this.discDoubleClicked.bind(this, disc))
+      
+
+      this.discs.push(disc);
+  }
+
+  dragged(event: any, d: any) {
+
+    d3.select(<any>this).attr("cx", event.x).attr("cy", event.y);
+  }
+  dragStarted(_event, _d) {
+    d3.select(<any>this).raise().attr("stroke", 'black');
+  }
+
+  dragEnded(_event, _d) {
+    d3.select(<any>this).attr("stroke", null);
+  }
+
+  discDoubleClicked(_disc, _event, _d) {
+    const discX = +_disc.attr('cx');
+    const discY = +_disc.attr('cy');
+    const discR = +_disc.attr('r');
+
+    const lineData: [number, number][] = [[0,0],[+discX + discR, discY]];
+    const line = d3.line();
+    this.blockLayer.append('path')
+    .style("stroke", "lightgreen")
+    .style("stroke-width", 3)
+    .attr('d', line(lineData))
+  }
+
+
+
   private createSvg(): void {
     this.svg = d3.select("figure#court")
       .append("svg")
+      .call(this.zoom)
       .attr("width", this.width + (this.margin * 2))
       .attr("height", this.height + (this.margin * 2))
       .append("g")
-      .attr("transform", "translate(" + this.margin + "," + this.margin + ")");
+      .attr("transform", "translate(" + this.margin + "," + this.margin + ")")
+      ;
 
-    d3.select('figure#court').call(zoom);
+      this.courtLayer = this.svg.append('g');
+      this.blockLayer = this.svg.append('g');
+      this.discLayer = this.svg.append('g');
+    // d3.select('figure#court').call(zoom);
   }
 
   private handleZoom(e: any) {
-    d3.select("figure#court")
+    this.svg
       .attr('transform', e.transform);
   }
 
   private drawCourt() {
-    this.drawShape(this.tenOff, 25);
-    this.drawShape(this.leftSeven, 25);
-    this.drawShape(this.rightSeven, 25);
-    this.drawShape(this.leftEight, 25);
-    this.drawShape(this.rightEight, 25);
-    this.drawShape(this.ten, 25);
-    // this.svg.append('polygon').attr('points', this.pointsToString(this.tenOff)).style('fill', 'teal').style('stroke', 'black').style('strokeWidth', '2px');
-    // this.svg.append('polygon').attr('points', this.pointsToString(this.leftSeven)).style('fill', 'teal').style('stroke', 'black').style('strokeWidth', '2px');
-    // this.svg.append('polygon').attr('points', this.pointsToString(this.rightSeven)).style('fill', 'teal').style('stroke', 'black').style('strokeWidth', '2px');
-    // this.svg.append('polygon').attr('points', this.pointsToString(this.leftEight)).style('fill', 'teal').style('stroke', 'black').style('strokeWidth', '2px');
-    // this.svg.append('polygon').attr('points', this.pointsToString(this.rightEight)).style('fill', 'teal').style('stroke', 'black').style('strokeWidth', '2px');
-    // this.svg.append('polygon').attr('points', this.pointsToString(this.ten)).style('fill', 'teal').style('stroke', 'black').style('strokeWidth', '2px');
+    this.drawCourtShape(this.courtLayer, this.tenOff, this.scaleFactor);
+    this.drawCourtShape(this.courtLayer, this.leftSeven, this.scaleFactor);
+    this.drawCourtShape(this.courtLayer, this.rightSeven, this.scaleFactor);
+    this.drawCourtShape(this.courtLayer, this.leftEight, this.scaleFactor);
+    this.drawCourtShape(this.courtLayer, this.rightEight, this.scaleFactor);
+    this.drawCourtShape(this.courtLayer, this.ten, this.scaleFactor);
 
-    
+    // todo: math here
+    // tips of 10s are 18 feet apart
+    const head = this.courtLayer.clone(true).attr('transform', `rotate(180,${3*this.scaleFactor},${10.5*this.scaleFactor})translate(0,-${18*this.scaleFactor})`) // translate(0,-2000)
+    // this.svg.append(head)
   }
 
-  private drawShape(points: {x: number, y:number}[], scaleFactor: number) {
+  private drawCourtShape(layer: Selection<SVGGElement, any, any, any>, points: { x: number, y: number }[], scaleFactor: number) {
     // https://bl.ocks.org/HarryStevens/a1287efa722f7e681dd0b8e8c9e616c9
     // const newPoints = geometric.polygonScale(points, scaleFactor);
-    this.svg.append('polygon').attr('points', this.pointsToString(points, scaleFactor)).style('fill', 'teal').style('stroke', 'black').style('strokeWidth', '2px');
+    // lines are 3/4ths of an inch thick
+    const scaledInch = (1 / 12) * (3 / 4) * scaleFactor;
+    layer.append('polygon')
+      .attr('points', this.pointsToString(points, scaleFactor))
+      .style('fill', 'teal')
+      .style('stroke', 'black')
+      .style('stroke-width', `${scaledInch}px`);
   }
 
   private pointsToString(points: { x: number, y: number }[], scaleFactor?: number) {
     return points.map((point) => '' + point.x * (scaleFactor ? scaleFactor : 1) + ',' + point.y * (scaleFactor ? scaleFactor : 1)).join(' ');
   }
+  // https://github.com/alisani081/whiteboard/blob/master/static/js/index.js
+  // https://bost.ocks.org/mike/chart/
+  // d3 scale (set up scale => x(original), y(original))
 }

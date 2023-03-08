@@ -3,13 +3,11 @@ import { BrowserModule } from '@angular/platform-browser';
 
 import { AppComponent } from './app.component';
 import { CourtComponent } from './court/court.component';
-import { DiscsComponent } from './discs/discs.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    CourtComponent,
-    DiscsComponent
+    CourtComponent
   ],
   imports: [
     BrowserModule
