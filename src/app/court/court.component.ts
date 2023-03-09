@@ -139,14 +139,21 @@ export class CourtComponent implements OnInit {
     // x = (y - c) / m
     const newXB = (0 - cB) / mB;
 
-    const lineData: [number, number][] = [bottomYellowEdge, [newXA, 0]];
+    const intersectX = (cB - cA) / (mA - mB);
+    const intersectY = mA * intersectX + cA;
+    let linesIntersect = intersectY > 0;
+
+    const lineAEndPoint: [number, number] = linesIntersect ? [intersectX, intersectY] : [newXA, 0];
+    const lineBEndPoint: [number, number] = linesIntersect ? [intersectX, intersectY] : [newXB, 0];
+
+    const lineData: [number, number][] = [bottomYellowEdge, lineAEndPoint];
     const line = d3.line();
     this.blockLayer.append('path')
       .style("stroke", "lightgreen")
       .style("stroke-width", 3)
       .attr('d', line(lineData))
 
-    const otherLineData: [number, number][] = [topYellowEdge, [newXB, 0]];
+    const otherLineData: [number, number][] = [topYellowEdge, lineBEndPoint];
     const otherLine = d3.line();
     this.blockLayer.append('path')
       .style("stroke", "lightgreen")
@@ -154,6 +161,7 @@ export class CourtComponent implements OnInit {
       .attr('d', line(otherLineData))
 
     // TODO: if lines intersect before y=0, then stop them there
+
   }
 
 
