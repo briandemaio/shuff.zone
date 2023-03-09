@@ -50,6 +50,8 @@ export class CourtComponent implements OnInit {
     { x: 3, y: 10.5 }
   ];
 
+  private deadLine: [number, number][] = [[0, 13.5], [6, 13.5]];
+
   private scaleFactor = 50;
 
   private svg: Selection<any, any, any, any>;
@@ -139,6 +141,7 @@ export class CourtComponent implements OnInit {
     // x = (y - c) / m
     const newXB = (0 - cB) / mB;
 
+    // if lines intersect before y=0, then stop them there
     const intersectX = (cB - cA) / (mA - mB);
     const intersectY = mA * intersectX + cA;
     let linesIntersect = intersectY > 0;
@@ -154,14 +157,11 @@ export class CourtComponent implements OnInit {
       .attr('d', line(lineData))
 
     const otherLineData: [number, number][] = [topYellowEdge, lineBEndPoint];
-    const otherLine = d3.line();
+    // const otherLine = d3.line();
     this.blockLayer.append('path')
       .style("stroke", "lightgreen")
       .style("stroke-width", 3)
       .attr('d', line(otherLineData))
-
-    // TODO: if lines intersect before y=0, then stop them there
-
   }
 
 
@@ -188,6 +188,10 @@ export class CourtComponent implements OnInit {
   }
 
   private drawCourt() {
+    // this.courtLayer.append('rect')
+    //   .attr("width", "100%")
+    //   .attr("height", "100%")
+    //   .attr('fill', 'teal');
     this.drawCourtShape(this.courtLayer, this.tenOff, this.scaleFactor);
     this.drawCourtShape(this.courtLayer, this.leftSeven, this.scaleFactor);
     this.drawCourtShape(this.courtLayer, this.rightSeven, this.scaleFactor);
@@ -195,22 +199,39 @@ export class CourtComponent implements OnInit {
     this.drawCourtShape(this.courtLayer, this.rightEight, this.scaleFactor);
     this.drawCourtShape(this.courtLayer, this.ten, this.scaleFactor);
 
-    // todo: math here
+    const deadLine = d3.line();
+    const scaledLineWidth = (1 / 12) * (3 / 4) * this.scaleFactor;
+    const scaledDeadLine = this.scaleLineData(this.deadLine, this.scaleFactor);
+    this.courtLayer.append('path')
+      .style("stroke", "black")
+      .style("stroke-width", `${scaledLineWidth}px`)
+      .attr('d', deadLine(scaledDeadLine))
+
     // tips of 10s are 18 feet apart
     const head = this.courtLayer.clone(true).attr('transform', `rotate(180,${3 * this.scaleFactor},${10.5 * this.scaleFactor})translate(0,-${18 * this.scaleFactor})`) // translate(0,-2000)
-    // this.svg.append(head)
+
+  }
+
+  private scaleLineData(lineData: [number, number][], scaleFactor: number): [number, number][] {
+    const newLineData: [number, number][] = [];
+
+    for (const point of lineData) {
+      newLineData.push([point[0] * scaleFactor, point[1] * scaleFactor]);
+    }
+
+    return newLineData;
   }
 
   private drawCourtShape(layer: Selection<SVGGElement, any, any, any>, points: { x: number, y: number }[], scaleFactor: number) {
     // https://bl.ocks.org/HarryStevens/a1287efa722f7e681dd0b8e8c9e616c9
     // const newPoints = geometric.polygonScale(points, scaleFactor);
     // lines are 3/4ths of an inch thick
-    const scaledInch = (1 / 12) * (3 / 4) * scaleFactor;
+    const scaledLineWidth = (1 / 12) * (3 / 4) * scaleFactor;
     layer.append('polygon')
       .attr('points', this.pointsToString(points, scaleFactor))
       .style('fill', 'teal')
       .style('stroke', 'black')
-      .style('stroke-width', `${scaledInch}px`);
+      .style('stroke-width', `${scaledLineWidth}px`);
   }
 
   private pointsToString(points: { x: number, y: number }[], scaleFactor?: number) {
