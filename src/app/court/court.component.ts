@@ -74,7 +74,7 @@ export class CourtComponent implements OnInit {
   }
 
   addDisc(yellow = true) {
-    const radius = (3/12) * this.scaleFactor;
+    const radius = (3 / 12) * this.scaleFactor;
     const disc = this.discLayer.append('circle')
       .attr('cx', '40px')
       .attr('cy', '40px')
@@ -85,14 +85,14 @@ export class CourtComponent implements OnInit {
       // .style('stroke-width', radius)
       // .style('stroke', '#FFBA01')
       .call(d3.drag<SVGCircleElement, unknown>()
-      .on('drag', this.dragged)
-      .on('start', this.dragStarted)
-      .on('end', this.dragEnded));
+        .on('drag', this.dragged)
+        .on('start', this.dragStarted)
+        .on('end', this.dragEnded));
 
-      disc.on('dblclick', this.discDoubleClicked.bind(this, disc))
-      
+    disc.on('dblclick', this.discDoubleClicked.bind(this, disc))
 
-      this.discs.push(disc);
+
+    this.discs.push(disc);
   }
 
   dragged(event: any, d: any) {
@@ -108,16 +108,52 @@ export class CourtComponent implements OnInit {
   }
 
   discDoubleClicked(_disc, _event, _d) {
-    const discX = +_disc.attr('cx');
-    const discY = +_disc.attr('cy');
-    const discR = +_disc.attr('r');
+    this.drawBlocking(_disc);
+  }
 
-    const lineData: [number, number][] = [[0,0],[+discX + discR, discY]];
+  drawBlocking(targetDisc, fromYellow = true) {
+    // TODO: add line thickness?
+    // draw from bottom edge, 3 inches from foot, 6 inches from gutter
+    // then draw from upper middle edge. 3 inches from 7, 6y inches from center
+    // court is 39 feet long and 6 feet wide
+    const discX = +targetDisc.attr('cx');
+    const discY = +targetDisc.attr('cy');
+    const discR = +targetDisc.attr('r');
+
+    const bottomYellowEdge: [number, number] = [(6 - 6 / 12) * this.scaleFactor, (39 - (3 / 12)) * this.scaleFactor];
+    // const extendedBottomLine = 
+    const topYellowEdge: [number, number] = [(3 + 6 / 12) * this.scaleFactor, (39 - (15 / 12)) * this.scaleFactor];
+
+    // m = (y2-y1)/(x2-x1)
+    const mA = (discY - bottomYellowEdge[1]) / ((+discX + discR) - bottomYellowEdge[0]);
+    // y = mx + c     -----      c = y - mx
+    const cA = bottomYellowEdge[1] - (mA * bottomYellowEdge[0]);
+    // x = (y - c) / m
+    const newXA = (0 - cA) / mA;
+
+    // do the same for the other line
+    // m = (y2-y1)/(x2-x1)
+    const mB = (discY - topYellowEdge[1]) / ((+discX - discR) - topYellowEdge[0]);
+    // y = mx + c     -----      c = y - mx
+    const cB = topYellowEdge[1] - (mB * topYellowEdge[0]);
+    // x = (y - c) / m
+    const newXB = (0 - cB) / mB;
+
+    const lineData: [number, number][] = [bottomYellowEdge, [newXA, 0]];
     const line = d3.line();
     this.blockLayer.append('path')
-    .style("stroke", "lightgreen")
-    .style("stroke-width", 3)
-    .attr('d', line(lineData))
+      .style("stroke", "lightgreen")
+      .style("stroke-width", 3)
+      .attr('d', line(lineData))
+
+    const otherLineData: [number, number][] = [topYellowEdge, [newXB, 0]];
+    const otherLine = d3.line();
+    this.blockLayer.append('path')
+      .style("stroke", "lightgreen")
+      .style("stroke-width", 3)
+      .attr('d', line(otherLineData))
+
+    // TODO: if lines intersect before y=0, then stop them there
   }
 
 
@@ -132,9 +168,9 @@ export class CourtComponent implements OnInit {
       .attr("transform", "translate(" + this.margin + "," + this.margin + ")")
       ;
 
-      this.courtLayer = this.svg.append('g');
-      this.blockLayer = this.svg.append('g');
-      this.discLayer = this.svg.append('g');
+    this.courtLayer = this.svg.append('g');
+    this.blockLayer = this.svg.append('g');
+    this.discLayer = this.svg.append('g');
     // d3.select('figure#court').call(zoom);
   }
 
@@ -153,7 +189,7 @@ export class CourtComponent implements OnInit {
 
     // todo: math here
     // tips of 10s are 18 feet apart
-    const head = this.courtLayer.clone(true).attr('transform', `rotate(180,${3*this.scaleFactor},${10.5*this.scaleFactor})translate(0,-${18*this.scaleFactor})`) // translate(0,-2000)
+    const head = this.courtLayer.clone(true).attr('transform', `rotate(180,${3 * this.scaleFactor},${10.5 * this.scaleFactor})translate(0,-${18 * this.scaleFactor})`) // translate(0,-2000)
     // this.svg.append(head)
   }
 
@@ -176,3 +212,5 @@ export class CourtComponent implements OnInit {
   // https://bost.ocks.org/mike/chart/
   // d3 scale (set up scale => x(original), y(original))
 }
+
+//https://math.stackexchange.com/questions/543496/how-to-find-the-equation-of-a-line-tangent-to-a-circle-that-passes-through-a-g
