@@ -9,6 +9,8 @@ import { Selection, zoom, ZoomBehavior } from 'd3';
 })
 export class CourtComponent implements OnInit {
 
+  // TODO: register TLD? shuff.cool or shuff.zone?
+
   private tenOff: { x: number, y: number }[] = [
     { x: 0, y: 0 },
     { x: 6, y: 0 },
@@ -65,6 +67,8 @@ export class CourtComponent implements OnInit {
   private zoom;
 
   private discs: any[] = [];
+  private blockingLineData: [number,number][][] = [];
+  private line = d3.line();
   constructor() { }
 
   ngOnInit(): void {
@@ -78,7 +82,7 @@ export class CourtComponent implements OnInit {
   addDisc(yellow = true) {
     const radius = (3 / 12) * this.scaleFactor;
     const disc = this.discLayer.append('circle')
-      .attr('cx', '40px')
+      .attr('cx', yellow ? `${5 * this.scaleFactor}px` : `${1 * this.scaleFactor}px`)
       .attr('cy', '40px')
       // 6 inch disc
       .attr('r', radius)
@@ -110,10 +114,11 @@ export class CourtComponent implements OnInit {
   }
 
   discDoubleClicked(_disc, _event, _d) {
+    this.calculateBlocking(_disc);
     this.drawBlocking(_disc);
   }
 
-  drawBlocking(targetDisc, fromYellow = true) {
+  calculateBlocking(targetDisc, fromYellow = true) {
     // TODO: add line thickness?
     // draw from bottom edge, 3 inches from foot, 6 inches from gutter
     // then draw from upper middle edge. 3 inches from 7, 6y inches from center
@@ -150,21 +155,21 @@ export class CourtComponent implements OnInit {
     const lineBEndPoint: [number, number] = linesIntersect ? [intersectX, intersectY] : [newXB, 0];
 
     const lineData: [number, number][] = [bottomYellowEdge, lineAEndPoint];
-    const line = d3.line();
-    this.blockLayer.append('path')
-      .style("stroke", "lightgreen")
-      .style("stroke-width", 3)
-      .attr('d', line(lineData))
-
     const otherLineData: [number, number][] = [topYellowEdge, lineBEndPoint];
-    // const otherLine = d3.line();
-    this.blockLayer.append('path')
-      .style("stroke", "lightgreen")
-      .style("stroke-width", 3)
-      .attr('d', line(otherLineData))
+
+    this.blockingLineData = [];
+    this.blockingLineData.push(lineData, otherLineData);
   }
 
-
+  drawBlocking(targetDisc, fromYellow = true) {const line = d3.line();
+    this.blockLayer.selectAll('*').remove();
+    for (const line of this.blockingLineData) {
+      this.blockLayer.append('path')
+      .style("stroke", "lightgreen")
+      .style("stroke-width", 3)
+      .attr('d', this.line(line))
+    }
+  }
 
   private createSvg(): void {
     this.svg = d3.select("figure#court")
