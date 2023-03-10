@@ -1,9 +1,25 @@
-<button (click)="addYellow()">Add yellow</button>
-<button (click)="addBlack()">Add black</button>
-<button (click)="toggleZoom()">Toggle zoom</button>
-<button (click)="removeAll()">Clear board</button>
-<div *ngIf="wService.selectedDisc">
-    <button (click)="toggleBlockBlack()">Block black</button>
-    <button (click)="toggleBlockYellow()">Block yellow</button>
-    <button (click)="removeDisc()">Remove disc</button>
+<div class="actions-container">
+    <div class="left-actions">
+        <button matTooltip="Add yellow disc" mat-icon-button class="yellow-button" (click)="addYellow()"><mat-icon>add_circle</mat-icon></button>
+        <button matTooltip="Add black disc" mat-icon-button class="black-button" (click)="addBlack()"><mat-icon>add_circle</mat-icon></button>
+        <button matTooltip="Toggle zoom" mat-icon-button (click)="toggleZoom()"><mat-icon>{{wService.zoomState === 'FOOT' ? 'zoom_out' :
+                'zoom_in'}}</mat-icon></button>
+
+        <span *ngIf="wService.selectedDisc">
+
+            <button matTooltip="Toggle blocking black" class="yellow-button" mat-icon-button (click)="toggleBlockYellow()">
+                <mat-icon
+                    [svgIcon]="wService.selectedDisc.blockYellow ? 'unblock_disc' : 'block_disc'">
+                </mat-icon>
+            </button>
+            <button matTooltip="Toggle blocking yellow" class="black-button" mat-icon-button (click)="toggleBlockBlack()"><mat-icon
+                    [svgIcon]="wService.selectedDisc.blockBlack ? 'unblock_disc' : 'block_disc'"></mat-icon></button>
+            <button mat-icon-button matTooltip="Remove selected disc"
+                (click)="removeDisc()"><mat-icon>remove_circle</mat-icon></button>
+        </span>
+    </div>
+    <div class="right-actions">
+        <button mat-icon-button matTooltip="Clear board"
+            (click)="removeAll()"><mat-icon>delete_sweep</mat-icon></button>
+    </div>
 </div>

@@ -1,0 +1,20 @@
+:host {
+    background-color: #aaa;
+}
+
+button {
+    text-transform: uppercase;
+}
+
+mat-button-toggle {
+    text-transform: uppercase !important;
+}
+
+.yellow-button {
+    color: yellow;
+}
+
+.actions-container {
+    display: flex;
+    justify-content: space-between;
+}

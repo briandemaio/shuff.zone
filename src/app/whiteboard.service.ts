@@ -53,6 +53,10 @@ export class WhiteboardService {
     this.discsUpdatedSource.next(this.discs);
   }
 
+  get zoomState(): 'FOOT' | 'COURT' {
+    return this.zoom;
+  }
+
   toggleZoom() {
     if (this.zoom === 'FOOT') {
       this.zoom = 'COURT';
