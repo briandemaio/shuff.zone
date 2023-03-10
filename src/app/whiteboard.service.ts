@@ -64,6 +64,7 @@ export class WhiteboardService {
 
   removeAllDiscs() {
     this.discData = [];
+    this.lastSelectedDisc = undefined;
     this.discsUpdatedSource.next(this.discs);
   }
 

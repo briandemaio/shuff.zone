@@ -87,17 +87,21 @@ export class CourtComponent implements OnInit {
   }
 
   dragged(event: any, d: Disc) {
+    let newX = Math.max(-0.25, event.x);
+    newX = Math.min(6.25, newX);
 
-    d3.select(<any>this).attr("cx", d.position[0] = event.x).attr("cy", d.position[1] = event.y);
+    let newY = Math.max(-0.25, event.y);
+    newY = Math.min(13.75, newY)
+    d3.select(event.sourceEvent.target).attr("cx", d.position[0] = newX).attr("cy", d.position[1] = newY);
+    this.calcAndDrawBlocking();
   }
-  dragStarted(event: MouseEvent, d: Disc) {
-    // this is event.sourceEvent.target
-    // d3.select(event.target)
-    d3.select(<any>this)
+  dragStarted(event: any, d: Disc) {
+    d3.select(event.sourceEvent.target)
       .raise()
       .attr('stroke-width', 1/24)
       .attr("stroke", 'black');
-    // this.wService.selectDisc(d);
+
+    this.wService.selectDisc(d);
   }
 
   dragEnded(_event, _d) {
@@ -213,7 +217,14 @@ export class CourtComponent implements OnInit {
       // .call(this.zoom.transform, d3.zoomIdentity.scale(100))
       // .attr('transform', 'scale(100)')
       // .call(this.zoom.extent, [[0,0], [6,15]])
-
+      this.svg.append('rect')
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('width', 6)
+      .attr('height', 39)
+      .attr('stroke', 'black')
+      .attr('stroke-width', 1/12)
+      .attr('fill', '#bbb')
     this.courtLayer = this.svg.append('g').attr('class', 'court');
     this.blockLayer = this.svg.append('g').attr('id', 'blocks');
     this.discLayer = this.svg.append('g').attr('id', 'discs');
@@ -233,20 +244,31 @@ export class CourtComponent implements OnInit {
 
   private zoomToFoot(transition = true) {
     
-    // const eW = this.el.nativeElement.offsetWidth;
+    const eW = this.el.nativeElement.offsetWidth;
     const eH = this.el.nativeElement.offsetHeight;
+    let scaleFactor = eH / 13.75;
+
+    if (6 * scaleFactor > eW) {
+      scaleFactor = eW / 6;
+    }
+    
+    const xOffset = (eW/2) - (scaleFactor * 3)
     d3.select('svg')
-      // .transition()
-      // .call(this.zoom.scaleTo, eH/13.5);
-      .call(this.zoom.transform, d3.zoomIdentity.scale(eH/13.5));
+      .call(this.zoom.transform, d3.zoomIdentity.translate(xOffset,0).scale(scaleFactor));
   }
 
   private zoomFullCourt(transition = true) {
-    // const eW = this.el.nativeElement.offsetWidth;
+    const eW = this.el.nativeElement.offsetWidth;
     const eH = this.el.nativeElement.offsetHeight;
+
+    let scaleFactor = eH / 39;
+
+    if (6 * scaleFactor > eW) {
+      scaleFactor = eW / 6;
+    }
+    const xOffset = (eW/2) - (scaleFactor * 3)
     d3.select('svg')
-      // .transition()
-      .call(this.zoom.transform, d3.zoomIdentity.scale(eH/39));
+      .call(this.zoom.transform, d3.zoomIdentity.translate(xOffset,0).scale(eH/39));
   }
 
   private handleZoom(e: any) {
@@ -255,10 +277,6 @@ export class CourtComponent implements OnInit {
   }
 
   private drawCourt() {
-    // this.courtLayer.append('rect')
-    //   .attr("width", "100%")
-    //   .attr("height", "100%")
-    //   .attr('fill', 'teal');
     this.drawCourtShape(this.courtLayer, this.tenOff);
     this.drawCourtShape(this.courtLayer, this.leftSeven);
     this.drawCourtShape(this.courtLayer, this.rightSeven);
@@ -273,6 +291,8 @@ export class CourtComponent implements OnInit {
       .style("stroke", "black")
       .style("stroke-width", `${scaledLineWidth}px`)
       .attr('d', deadLine(scaledDeadLine))
+
+
 
     // tips of 10s are 18 feet apart
     const head = this.courtLayer.clone(true).attr('transform', `rotate(180,${3},${10.5})translate(0,-${18})`) // translate(0,-2000)
@@ -297,11 +317,11 @@ export class CourtComponent implements OnInit {
           // .style('stroke-width', radius)
           // .style('stroke', '#FFBA01')
           .call(d3.drag<SVGCircleElement, Disc>()
-            .on('drag', this.dragged)
-            .on('start', this.dragStarted)
+            .on('drag', this.dragged.bind(this))
+            .on('start', this.dragStarted.bind(this))
             .on('end', this.dragEnded))
           .on('click', this.discClicked.bind(this)),
-        update => update,
+        update => {this.calcAndDrawBlocking(); return update;},
         exit => exit.remove()
       );
   }
