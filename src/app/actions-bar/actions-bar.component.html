@@ -1,10 +1,9 @@
 <button (click)="addYellow()">Add yellow</button>
 <button (click)="addBlack()">Add black</button>
+<button (click)="toggleZoom()">Toggle zoom</button>
+<button (click)="removeAll()">Clear board</button>
 <div *ngIf="wService.selectedDisc">
     <button (click)="toggleBlockBlack()">Block black</button>
     <button (click)="toggleBlockYellow()">Block yellow</button>
     <button (click)="removeDisc()">Remove disc</button>
-    <button (click)="removeAll()">Clear board</button>
 </div>
-
-{{wService.discs.length}}

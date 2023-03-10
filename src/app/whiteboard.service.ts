@@ -12,10 +12,14 @@ export class WhiteboardService {
 
   private index = 0;
 
+  private zoom: 'FOOT' | 'COURT' = 'FOOT';
+
   private discsUpdatedSource = new Subject<Disc[]>();
+  private zoomUpdatedSource = new Subject<'FOOT' | 'COURT'>();
 
   // Observable string streams
   discsUpdated$ = this.discsUpdatedSource.asObservable();
+  zoomUpdated$ = this.zoomUpdatedSource.asObservable();
   constructor() {
   }
 
@@ -47,6 +51,15 @@ export class WhiteboardService {
     });
 
     this.discsUpdatedSource.next(this.discs);
+  }
+
+  toggleZoom() {
+    if (this.zoom === 'FOOT') {
+      this.zoom = 'COURT';
+    } else {
+      this.zoom = 'FOOT';
+    }
+    this.zoomUpdatedSource.next(this.zoom);
   }
 
   removeAllDiscs() {

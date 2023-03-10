@@ -13,6 +13,10 @@ export class ActionsBarComponent implements OnInit {
   ngOnInit(): void {
   }
 
+  toggleZoom() {
+    this.wService.toggleZoom();
+  }
+
   toggleBlockBlack() {
     this.wService.toggleSelectedBlockBlack();
   }

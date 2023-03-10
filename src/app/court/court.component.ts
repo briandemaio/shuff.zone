@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit } from '@angular/core';
 import * as d3 from 'd3';
 import { Selection, zoom, ZoomBehavior } from 'd3';
 import { Disc } from '../disc';
@@ -74,14 +74,14 @@ export class CourtComponent implements OnInit {
 
   private blockingLineData: [number, number][][] = [];
   private line = d3.line();
-  constructor(private wService: WhiteboardService) { }
+  constructor(private wService: WhiteboardService, private el: ElementRef) { }
 
   ngOnInit(): void {
     this.wService.discsUpdated$.subscribe(() => {this.updateDiscs(); this.calcAndDrawBlocking();});
+    this.wService.zoomUpdated$.subscribe((zoom: 'FOOT' | 'COURT') => {this.updateZoom(zoom)});
     this.zoom = d3.zoom()
-      .on('zoom', this.handleZoom.bind(this));
+      // .on('zoom', this.handleZoom);
     this.createSvg();
-    // this.drawBars(this.data);
     this.drawCourt();
     this.updateDiscs();
   }
@@ -190,13 +190,19 @@ export class CourtComponent implements OnInit {
   }
 
   private createSvg(): void {
+    
     this.svg = d3.select("figure#court")
       .append("svg")
-      .call(this.zoom)
+      // .call(this.zoom)
       .attr("width", '100%')
       .attr("height", '100%')
       .append("g")
+      // .call(this.zoom.transform, d3.zoomIdentity.scale(100))
       ;
+
+      d3.select('svg').call(this.zoom);
+      // .call(this.zoom.extent([[0,0], [6,15]]))
+      this.updateZoom('FOOT', false);
 
       // .attr("transform", "translate(" + this.margin + "," + this.margin + ")")
       // .call(this.zoom.transform, d3.zoomIdentity.translate(3, 5).scale(1))
@@ -208,13 +214,43 @@ export class CourtComponent implements OnInit {
       // .attr('transform', 'scale(100)')
       // .call(this.zoom.extent, [[0,0], [6,15]])
 
-    this.courtLayer = this.svg.append('g');
+    this.courtLayer = this.svg.append('g').attr('class', 'court');
     this.blockLayer = this.svg.append('g').attr('id', 'blocks');
     this.discLayer = this.svg.append('g').attr('id', 'discs');
   }
 
+  private updateZoom(zoom: 'FOOT' | 'COURT', transition = true) {
+    this.zoom
+      .on('zoom', this.handleZoom);
+    if (zoom === 'FOOT') {
+      this.zoomToFoot(transition);
+    } else if (zoom === 'COURT') {
+      this.zoomFullCourt(transition);
+    }
+    this.zoom
+    .on('zoom', null);
+  }
+
+  private zoomToFoot(transition = true) {
+    
+    // const eW = this.el.nativeElement.offsetWidth;
+    const eH = this.el.nativeElement.offsetHeight;
+    d3.select('svg')
+      // .transition()
+      // .call(this.zoom.scaleTo, eH/13.5);
+      .call(this.zoom.transform, d3.zoomIdentity.scale(eH/13.5));
+  }
+
+  private zoomFullCourt(transition = true) {
+    // const eW = this.el.nativeElement.offsetWidth;
+    const eH = this.el.nativeElement.offsetHeight;
+    d3.select('svg')
+      // .transition()
+      .call(this.zoom.transform, d3.zoomIdentity.scale(eH/39));
+  }
+
   private handleZoom(e: any) {
-    this.svg
+    d3.select('svg g')
       .attr('transform', e.transform);
   }
 
