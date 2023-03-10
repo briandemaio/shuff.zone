@@ -1,9 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import * as d3 from 'd3';
 import { Selection, zoom, ZoomBehavior } from 'd3';
+import { Disc } from '../disc';
+import { WhiteboardService } from '../whiteboard.service';
 
 @Component({
-  selector: 'app-court',
+  selector: 'shuff-court',
   templateUrl: './court.component.html',
   styleUrls: ['./court.component.scss']
 })
@@ -54,10 +56,8 @@ export class CourtComponent implements OnInit {
 
   private deadLine: [number, number][] = [[0, 13.5], [6, 13.5]];
 
-  private scaleFactor = 50;
-
   private svg: Selection<any, any, any, any>;
-  private discLayer: Selection<SVGGElement, any, any, any>;
+  private discLayer: Selection<SVGGElement, Disc, any, any>;
   private blockLayer: Selection<SVGGElement, any, any, any>;
   private courtLayer: Selection<SVGGElement, any, any, any>;
   private margin = 50;
@@ -66,83 +66,98 @@ export class CourtComponent implements OnInit {
 
   private zoom;
 
-  private discs: any[] = [];
-  private blockingLineData: [number,number][][] = [];
+  private outsideBlackEdge: [number, number] = [(6 / 12), (39 - (3 / 12))];
+  private insideBlackEdge: [number, number] = [(3 - 6 / 12), (39 - (15 / 12))];
+
+  private outsideYellowEdge: [number, number] = [(6 - 6 / 12), (39 - (3 / 12))];
+  private insideYellowEdge: [number, number] = [(3 + 6 / 12), (39 - (15 / 12))];
+
+  private blockingLineData: [number, number][][] = [];
   private line = d3.line();
-  constructor() { }
+  constructor(private wService: WhiteboardService) { }
 
   ngOnInit(): void {
+    this.wService.discsUpdated$.subscribe(() => {this.updateDiscs(); this.calcAndDrawBlocking();});
     this.zoom = d3.zoom()
       .on('zoom', this.handleZoom.bind(this));
     this.createSvg();
     // this.drawBars(this.data);
     this.drawCourt();
+    this.updateDiscs();
   }
 
-  addDisc(yellow = true) {
-    const radius = (3 / 12) * this.scaleFactor;
-    const disc = this.discLayer.append('circle')
-      .attr('cx', yellow ? `${5 * this.scaleFactor}px` : `${1 * this.scaleFactor}px`)
-      .attr('cy', '40px')
-      // 6 inch disc
-      .attr('r', radius)
-      .style('fill', yellow ? 'yellow' : 'black')
-      .style('cursor', 'pointer')
-      // .style('stroke-width', radius)
-      // .style('stroke', '#FFBA01')
-      .call(d3.drag<SVGCircleElement, unknown>()
-        .on('drag', this.dragged)
-        .on('start', this.dragStarted)
-        .on('end', this.dragEnded));
+  dragged(event: any, d: Disc) {
 
-    disc.on('dblclick', this.discDoubleClicked.bind(this, disc))
-
-
-    this.discs.push(disc);
+    d3.select(<any>this).attr("cx", d.position[0] = event.x).attr("cy", d.position[1] = event.y);
   }
-
-  dragged(event: any, d: any) {
-
-    d3.select(<any>this).attr("cx", event.x).attr("cy", event.y);
-  }
-  dragStarted(_event, _d) {
+  dragStarted(event: MouseEvent, d: Disc) {
+    // this is event.sourceEvent.target
+    // d3.select(event.target)
     d3.select(<any>this).raise().attr("stroke", 'black');
+    this.wService.selectDisc(d);
   }
 
   dragEnded(_event, _d) {
     d3.select(<any>this).attr("stroke", null);
   }
 
-  discDoubleClicked(_disc, _event, _d) {
-    this.calculateBlocking(_disc);
-    this.drawBlocking(_disc);
+  discClicked(_event, d: Disc) {
+    this.wService.selectDisc(d);
   }
 
-  calculateBlocking(targetDisc, fromYellow = true) {
+  calcAndDrawBlocking() {
+    this.blockingLineData = [];
+    for (const disc of this.wService.discs) {
+      if (disc.blockBlack || disc.blockYellow) {
+        this.calculateBlocking(disc);
+      }
+    }    
+    this.drawBlocking();
+  }
+
+  calculateBlocking(disc: Disc) {
+    if (!disc.blockBlack && !disc.blockYellow) {
+      return;
+    }
     // TODO: add line thickness?
     // draw from bottom edge, 3 inches from foot, 6 inches from gutter
     // then draw from upper middle edge. 3 inches from 7, 6y inches from center
     // court is 39 feet long and 6 feet wide
-    const discX = +targetDisc.attr('cx');
-    const discY = +targetDisc.attr('cy');
-    const discR = +targetDisc.attr('r');
+    const discX = disc.position[0];
+    const discY = disc.position[1];
+    const discR = 3/12;
 
-    const bottomYellowEdge: [number, number] = [(6 - 6 / 12) * this.scaleFactor, (39 - (3 / 12)) * this.scaleFactor];
-    // const extendedBottomLine = 
-    const topYellowEdge: [number, number] = [(3 + 6 / 12) * this.scaleFactor, (39 - (15 / 12)) * this.scaleFactor];
+    const leftDiscEdge: [number, number] = [discX - discR, discY];
+    const rightDiscEdge: [number, number] = [discX + discR, discY];
 
+
+    if (disc.blockBlack) {
+      this.blockingLineData.push(...this.getBlockingLineData(this.outsideBlackEdge, leftDiscEdge, this.insideBlackEdge, rightDiscEdge));
+    }
+
+    if (disc.blockYellow) {
+      this.blockingLineData.push(...this.getBlockingLineData(this.insideYellowEdge, leftDiscEdge, this.outsideYellowEdge, rightDiscEdge));
+    }
+  }
+
+  getBlockingLineData(
+    leftDiscPoint: [number, number],
+    leftStartPoint: [number, number],
+    rightDiscPoint: [number, number],
+    rightStartPoint: [number, number]): [number, number][][] {
     // m = (y2-y1)/(x2-x1)
-    const mA = (discY - bottomYellowEdge[1]) / ((+discX + discR) - bottomYellowEdge[0]);
+    const mA = (leftDiscPoint[1] - leftStartPoint[1]) / (leftDiscPoint[0] - leftStartPoint[0]);
     // y = mx + c     -----      c = y - mx
-    const cA = bottomYellowEdge[1] - (mA * bottomYellowEdge[0]);
+    const cA = leftStartPoint[1] - (mA * leftStartPoint[0]);
     // x = (y - c) / m
     const newXA = (0 - cA) / mA;
 
+
     // do the same for the other line
     // m = (y2-y1)/(x2-x1)
-    const mB = (discY - topYellowEdge[1]) / ((+discX - discR) - topYellowEdge[0]);
+    const mB = (rightDiscPoint[1] - rightStartPoint[1]) / (rightDiscPoint[0] - rightStartPoint[0]);
     // y = mx + c     -----      c = y - mx
-    const cB = topYellowEdge[1] - (mB * topYellowEdge[0]);
+    const cB = rightStartPoint[1] - (mB * rightStartPoint[0]);
     // x = (y - c) / m
     const newXB = (0 - cB) / mB;
 
@@ -154,20 +169,20 @@ export class CourtComponent implements OnInit {
     const lineAEndPoint: [number, number] = linesIntersect ? [intersectX, intersectY] : [newXA, 0];
     const lineBEndPoint: [number, number] = linesIntersect ? [intersectX, intersectY] : [newXB, 0];
 
-    const lineData: [number, number][] = [bottomYellowEdge, lineAEndPoint];
-    const otherLineData: [number, number][] = [topYellowEdge, lineBEndPoint];
+    const lineData: [number, number][] = [leftDiscPoint, lineAEndPoint];
+    const otherLineData: [number, number][] = [rightDiscPoint, lineBEndPoint];
 
-    this.blockingLineData = [];
-    this.blockingLineData.push(lineData, otherLineData);
+    return [lineData, otherLineData];
+
   }
 
-  drawBlocking(targetDisc, fromYellow = true) {const line = d3.line();
+  drawBlocking() {
     this.blockLayer.selectAll('*').remove();
     for (const line of this.blockingLineData) {
       this.blockLayer.append('path')
-      .style("stroke", "lightgreen")
-      .style("stroke-width", 3)
-      .attr('d', this.line(line))
+        .style("stroke", "lightgreen")
+        .style("stroke-width", 1/12)
+        .attr('d', this.line(line))
     }
   }
 
@@ -182,8 +197,8 @@ export class CourtComponent implements OnInit {
       ;
 
     this.courtLayer = this.svg.append('g');
-    this.blockLayer = this.svg.append('g');
-    this.discLayer = this.svg.append('g');
+    this.blockLayer = this.svg.append('g').attr('id', 'blocks');
+    this.discLayer = this.svg.append('g').attr('id', 'discs');
     // d3.select('figure#court').call(zoom);
   }
 
@@ -197,50 +212,77 @@ export class CourtComponent implements OnInit {
     //   .attr("width", "100%")
     //   .attr("height", "100%")
     //   .attr('fill', 'teal');
-    this.drawCourtShape(this.courtLayer, this.tenOff, this.scaleFactor);
-    this.drawCourtShape(this.courtLayer, this.leftSeven, this.scaleFactor);
-    this.drawCourtShape(this.courtLayer, this.rightSeven, this.scaleFactor);
-    this.drawCourtShape(this.courtLayer, this.leftEight, this.scaleFactor);
-    this.drawCourtShape(this.courtLayer, this.rightEight, this.scaleFactor);
-    this.drawCourtShape(this.courtLayer, this.ten, this.scaleFactor);
+    this.drawCourtShape(this.courtLayer, this.tenOff);
+    this.drawCourtShape(this.courtLayer, this.leftSeven);
+    this.drawCourtShape(this.courtLayer, this.rightSeven);
+    this.drawCourtShape(this.courtLayer, this.leftEight);
+    this.drawCourtShape(this.courtLayer, this.rightEight);
+    this.drawCourtShape(this.courtLayer, this.ten);
 
     const deadLine = d3.line();
-    const scaledLineWidth = (1 / 12) * (3 / 4) * this.scaleFactor;
-    const scaledDeadLine = this.scaleLineData(this.deadLine, this.scaleFactor);
+    const scaledLineWidth = (1 / 12) * (3 / 4);
+    const scaledDeadLine = this.scaleLineData(this.deadLine);
     this.courtLayer.append('path')
       .style("stroke", "black")
       .style("stroke-width", `${scaledLineWidth}px`)
       .attr('d', deadLine(scaledDeadLine))
 
     // tips of 10s are 18 feet apart
-    const head = this.courtLayer.clone(true).attr('transform', `rotate(180,${3 * this.scaleFactor},${10.5 * this.scaleFactor})translate(0,-${18 * this.scaleFactor})`) // translate(0,-2000)
+    const head = this.courtLayer.clone(true).attr('transform', `rotate(180,${3},${10.5})translate(0,-${18})`) // translate(0,-2000)
 
   }
 
-  private scaleLineData(lineData: [number, number][], scaleFactor: number): [number, number][] {
+  private updateDiscs() {
+    const radius = (3 / 12);
+    const disc = this.discLayer
+    const discs = d3.select('#discs')
+      .selectAll('circle')
+      .data(this.wService.discs, (d: any) => d.index)
+      .join(
+        enter => enter
+          .append('circle')
+          .attr('cx', d => `${d.position[0]}px`)
+          .attr('cy', d => `${d.position[1]}px`)
+          // 6 inch disc
+          .attr('r', 0.5 / 2)
+          .style('fill', d => d.color.toLowerCase())
+          .style('cursor', 'pointer')
+          // .style('stroke-width', radius)
+          // .style('stroke', '#FFBA01')
+          .call(d3.drag<SVGCircleElement, Disc>()
+            .on('drag', this.dragged)
+            .on('start', (e, d) => this.dragStarted)
+            .on('end', this.dragEnded))
+          .on('click', this.discClicked.bind(this)),
+        update => update,
+        exit => exit.remove()
+      );
+  }
+
+  private scaleLineData(lineData: [number, number][]): [number, number][] {
     const newLineData: [number, number][] = [];
 
     for (const point of lineData) {
-      newLineData.push([point[0] * scaleFactor, point[1] * scaleFactor]);
+      newLineData.push([point[0], point[1]]);
     }
 
     return newLineData;
   }
 
-  private drawCourtShape(layer: Selection<SVGGElement, any, any, any>, points: { x: number, y: number }[], scaleFactor: number) {
+  private drawCourtShape(layer: Selection<SVGGElement, any, any, any>, points: { x: number, y: number }[]) {
     // https://bl.ocks.org/HarryStevens/a1287efa722f7e681dd0b8e8c9e616c9
     // const newPoints = geometric.polygonScale(points, scaleFactor);
     // lines are 3/4ths of an inch thick
-    const scaledLineWidth = (1 / 12) * (3 / 4) * scaleFactor;
+    const scaledLineWidth = (1 / 12) * (3 / 4);
     layer.append('polygon')
-      .attr('points', this.pointsToString(points, scaleFactor))
+      .attr('points', this.pointsToString(points))
       .style('fill', 'teal')
       .style('stroke', 'black')
       .style('stroke-width', `${scaledLineWidth}px`);
   }
 
-  private pointsToString(points: { x: number, y: number }[], scaleFactor?: number) {
-    return points.map((point) => '' + point.x * (scaleFactor ? scaleFactor : 1) + ',' + point.y * (scaleFactor ? scaleFactor : 1)).join(' ');
+  private pointsToString(points: { x: number, y: number }[]) {
+    return points.map((point) => '' + point.x + ',' + point.y).join(' ');
   }
   // https://github.com/alisani081/whiteboard/blob/master/static/js/index.js
   // https://bost.ocks.org/mike/chart/

@@ -1,0 +1,7 @@
+<div *ngIf="wService.selectedDisc">
+    <button (click)="toggleBlockBlack()">Block black</button>
+    <button (click)="toggleBlockYellow()">Block yellow</button>
+    <button (click)="removeDisc()">Remove disc</button>
+</div>
+
+{{wService.discs.length}}

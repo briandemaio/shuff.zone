@@ -1,5 +1,6 @@
 import { Component, ViewChild } from '@angular/core';
 import { CourtComponent } from './court/court.component';
+import { WhiteboardService } from './whiteboard.service';
 
 @Component({
   selector: 'app-root',
@@ -10,11 +11,12 @@ export class AppComponent {
   @ViewChild('court') court: CourtComponent;
   title = 'shuffleboard-whiteboard';
 
+  constructor(private wService: WhiteboardService) {}
   addYellow() {
-    this.court.addDisc(true);
+    this.wService.addDisc('YELLOW');
   }
 
   addBlack() {
-    this.court.addDisc(false);
+    this.wService.addDisc('BLACK');
   }
 }
