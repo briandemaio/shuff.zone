@@ -78,6 +78,7 @@ export class WhiteboardService {
 
   selectDisc(disc: Disc) {
     this.lastSelectedDisc = disc;
+    this.discsUpdatedSource.next(this.discs);
   }
 
   toggleSelectedBlockBlack() {

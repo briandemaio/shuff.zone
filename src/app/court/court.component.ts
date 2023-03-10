@@ -77,10 +77,10 @@ export class CourtComponent implements OnInit {
   constructor(private wService: WhiteboardService, private el: ElementRef) { }
 
   ngOnInit(): void {
-    this.wService.discsUpdated$.subscribe(() => {this.updateDiscs(); this.calcAndDrawBlocking();});
-    this.wService.zoomUpdated$.subscribe((zoom: 'FOOT' | 'COURT') => {this.updateZoom(zoom)});
+    this.wService.discsUpdated$.subscribe(() => { this.updateDiscs(); this.calcAndDrawBlocking(); });
+    this.wService.zoomUpdated$.subscribe((zoom: 'FOOT' | 'COURT') => { this.updateZoom(zoom) });
     this.zoom = d3.zoom()
-      // .on('zoom', this.handleZoom);
+    // .on('zoom', this.handleZoom);
     this.createSvg();
     this.drawCourt();
     this.updateDiscs();
@@ -98,7 +98,7 @@ export class CourtComponent implements OnInit {
   dragStarted(event: any, d: Disc) {
     d3.select(event.sourceEvent.target)
       .raise()
-      .attr('stroke-width', 1/24)
+      .attr('stroke-width', 1 / 24)
       .attr("stroke", 'black');
 
     this.wService.selectDisc(d);
@@ -118,7 +118,7 @@ export class CourtComponent implements OnInit {
       if (disc.blockBlack || disc.blockYellow) {
         this.calculateBlocking(disc);
       }
-    }    
+    }
     this.drawBlocking();
   }
 
@@ -132,7 +132,7 @@ export class CourtComponent implements OnInit {
     // court is 39 feet long and 6 feet wide
     const discX = disc.position[0];
     const discY = disc.position[1];
-    const discR = 3/12;
+    const discR = 3 / 12;
 
     const leftDiscEdge: [number, number] = [discX - discR, discY];
     const rightDiscEdge: [number, number] = [discX + discR, discY];
@@ -188,13 +188,13 @@ export class CourtComponent implements OnInit {
     for (const line of this.blockingLineData) {
       this.blockLayer.append('path')
         .style("stroke", "lightgreen")
-        .style("stroke-width", 1/12)
+        .style("stroke-width", 1 / 12)
         .attr('d', this.line(line))
     }
   }
 
   private createSvg(): void {
-    
+
     this.svg = d3.select("figure#court")
       .append("svg")
       // .call(this.zoom)
@@ -204,26 +204,26 @@ export class CourtComponent implements OnInit {
       // .call(this.zoom.transform, d3.zoomIdentity.scale(100))
       ;
 
-      d3.select('svg').call(this.zoom);
-      // .call(this.zoom.extent([[0,0], [6,15]]))
-      this.updateZoom('FOOT', false);
+    d3.select('svg').call(this.zoom);
+    // .call(this.zoom.extent([[0,0], [6,15]]))
+    this.updateZoom('FOOT', false);
 
-      // .attr("transform", "translate(" + this.margin + "," + this.margin + ")")
-      // .call(this.zoom.transform, d3.zoomIdentity.translate(3, 5).scale(1))
-      // .call(this.zoom.extent, [[0,0], [6,15]])
-      // .call(this.zoom.transform, d3.zoomIdentity.tra)
-      
-      // this.svg
-      // .call(this.zoom.transform, d3.zoomIdentity.scale(100))
-      // .attr('transform', 'scale(100)')
-      // .call(this.zoom.extent, [[0,0], [6,15]])
-      this.svg.append('rect')
+    // .attr("transform", "translate(" + this.margin + "," + this.margin + ")")
+    // .call(this.zoom.transform, d3.zoomIdentity.translate(3, 5).scale(1))
+    // .call(this.zoom.extent, [[0,0], [6,15]])
+    // .call(this.zoom.transform, d3.zoomIdentity.tra)
+
+    // this.svg
+    // .call(this.zoom.transform, d3.zoomIdentity.scale(100))
+    // .attr('transform', 'scale(100)')
+    // .call(this.zoom.extent, [[0,0], [6,15]])
+    this.svg.append('rect')
       .attr('x', 0)
       .attr('y', 0)
       .attr('width', 6)
       .attr('height', 39)
       .attr('stroke', 'black')
-      .attr('stroke-width', 1/12)
+      .attr('stroke-width', 1 / 12)
       .attr('fill', '#bbb')
     this.courtLayer = this.svg.append('g').attr('class', 'court');
     this.blockLayer = this.svg.append('g').attr('id', 'blocks');
@@ -239,11 +239,11 @@ export class CourtComponent implements OnInit {
       this.zoomFullCourt(transition);
     }
     this.zoom
-    .on('zoom', null);
+      .on('zoom', null);
   }
 
   private zoomToFoot(transition = true) {
-    
+
     const eW = this.el.nativeElement.offsetWidth;
     const eH = this.el.nativeElement.offsetHeight;
     let scaleFactor = eH / 13.75;
@@ -251,10 +251,10 @@ export class CourtComponent implements OnInit {
     if (6 * scaleFactor > eW) {
       scaleFactor = eW / 6;
     }
-    
-    const xOffset = (eW/2) - (scaleFactor * 3)
+
+    const xOffset = (eW / 2) - (scaleFactor * 3)
     d3.select('svg')
-      .call(this.zoom.transform, d3.zoomIdentity.translate(xOffset,0).scale(scaleFactor));
+      .call(this.zoom.transform, d3.zoomIdentity.translate(xOffset, 0).scale(scaleFactor));
   }
 
   private zoomFullCourt(transition = true) {
@@ -266,9 +266,9 @@ export class CourtComponent implements OnInit {
     if (6 * scaleFactor > eW) {
       scaleFactor = eW / 6;
     }
-    const xOffset = (eW/2) - (scaleFactor * 3)
+    const xOffset = (eW / 2) - (scaleFactor * 3)
     d3.select('svg')
-      .call(this.zoom.transform, d3.zoomIdentity.translate(xOffset,0).scale(eH/39));
+      .call(this.zoom.transform, d3.zoomIdentity.translate(xOffset, 0).scale(eH / 39));
   }
 
   private handleZoom(e: any) {
@@ -314,14 +314,17 @@ export class CourtComponent implements OnInit {
           .attr('r', 0.5 / 2)
           .style('fill', d => d.color.toLowerCase())
           .style('cursor', 'pointer')
-          // .style('stroke-width', radius)
-          // .style('stroke', '#FFBA01')
           .call(d3.drag<SVGCircleElement, Disc>()
             .on('drag', this.dragged.bind(this))
             .on('start', this.dragStarted.bind(this))
             .on('end', this.dragEnded))
           .on('click', this.discClicked.bind(this)),
-        update => {this.calcAndDrawBlocking(); return update;},
+        update => {
+          this.calcAndDrawBlocking(); 
+          return update.style('stroke-width', 1 / 12)
+            .style('stroke', '#000000')
+            .style('stroke-opacity', (disc: Disc) => this.wService.selectedDisc?.index === disc.index ? 0.3 : 0.0);
+        },
         exit => exit.remove()
       );
   }
