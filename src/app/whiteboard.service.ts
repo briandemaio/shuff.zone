@@ -51,6 +51,7 @@ export class WhiteboardService {
 
   removeAllDiscs() {
     this.discData = [];
+    this.discsUpdatedSource.next(this.discs);
   }
 
   get discs(): Disc[] {

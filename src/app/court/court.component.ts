@@ -64,7 +64,7 @@ export class CourtComponent implements OnInit {
   private width = 750 - (this.margin * 2);
   private height = 800 - (this.margin * 2);
 
-  private zoom;
+  private zoom: ZoomBehavior<any, any>;
 
   private outsideBlackEdge: [number, number] = [(6 / 12), (39 - (3 / 12))];
   private insideBlackEdge: [number, number] = [(3 - 6 / 12), (39 - (15 / 12))];
@@ -93,8 +93,11 @@ export class CourtComponent implements OnInit {
   dragStarted(event: MouseEvent, d: Disc) {
     // this is event.sourceEvent.target
     // d3.select(event.target)
-    d3.select(<any>this).raise().attr("stroke", 'black');
-    this.wService.selectDisc(d);
+    d3.select(<any>this)
+      .raise()
+      .attr('stroke-width', 1/24)
+      .attr("stroke", 'black');
+    // this.wService.selectDisc(d);
   }
 
   dragEnded(_event, _d) {
@@ -190,16 +193,24 @@ export class CourtComponent implements OnInit {
     this.svg = d3.select("figure#court")
       .append("svg")
       .call(this.zoom)
-      .attr("width", this.width + (this.margin * 2))
-      .attr("height", this.height + (this.margin * 2))
+      .attr("width", '100%')
+      .attr("height", '100%')
       .append("g")
-      .attr("transform", "translate(" + this.margin + "," + this.margin + ")")
       ;
+
+      // .attr("transform", "translate(" + this.margin + "," + this.margin + ")")
+      // .call(this.zoom.transform, d3.zoomIdentity.translate(3, 5).scale(1))
+      // .call(this.zoom.extent, [[0,0], [6,15]])
+      // .call(this.zoom.transform, d3.zoomIdentity.tra)
+      
+      // this.svg
+      // .call(this.zoom.transform, d3.zoomIdentity.scale(100))
+      // .attr('transform', 'scale(100)')
+      // .call(this.zoom.extent, [[0,0], [6,15]])
 
     this.courtLayer = this.svg.append('g');
     this.blockLayer = this.svg.append('g').attr('id', 'blocks');
     this.discLayer = this.svg.append('g').attr('id', 'discs');
-    // d3.select('figure#court').call(zoom);
   }
 
   private handleZoom(e: any) {
@@ -251,7 +262,7 @@ export class CourtComponent implements OnInit {
           // .style('stroke', '#FFBA01')
           .call(d3.drag<SVGCircleElement, Disc>()
             .on('drag', this.dragged)
-            .on('start', (e, d) => this.dragStarted)
+            .on('start', this.dragStarted)
             .on('end', this.dragEnded))
           .on('click', this.discClicked.bind(this)),
         update => update,

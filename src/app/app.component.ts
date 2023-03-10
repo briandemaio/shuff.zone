@@ -12,11 +12,5 @@ export class AppComponent {
   title = 'shuffleboard-whiteboard';
 
   constructor(private wService: WhiteboardService) {}
-  addYellow() {
-    this.wService.addDisc('YELLOW');
-  }
 
-  addBlack() {
-    this.wService.addDisc('BLACK');
-  }
 }

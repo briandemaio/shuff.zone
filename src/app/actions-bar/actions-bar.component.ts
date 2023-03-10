@@ -25,4 +25,16 @@ export class ActionsBarComponent implements OnInit {
     this.wService.removeSelectedDisc();
   }
 
+  removeAll() {
+    this.wService.removeAllDiscs();
+  }
+
+  addYellow() {
+    this.wService.addDisc('YELLOW');
+  }
+
+  addBlack() {
+    this.wService.addDisc('BLACK');
+  }
+
 }
