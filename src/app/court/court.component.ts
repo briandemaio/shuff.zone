@@ -92,11 +92,11 @@ export class CourtComponent implements OnInit {
 
     let newY = Math.max(-0.25, event.y);
     newY = Math.min(13.75, newY)
-    d3.select(event.sourceEvent.target).attr("cx", d.position[0] = newX).attr("cy", d.position[1] = newY);
+    d3.select('circle.disc-' + d.index).attr("cx", d.position[0] = newX).attr("cy", d.position[1] = newY);
     this.calcAndDrawBlocking();
   }
   dragStarted(event: any, d: Disc) {
-    d3.select(event.sourceEvent.target)
+    d3.select('circle.disc-' + d.index)
       .raise()
       .attr('stroke-width', 1 / 24)
       .attr("stroke", 'black');
@@ -312,6 +312,7 @@ export class CourtComponent implements OnInit {
           .attr('cy', d => `${d.position[1]}px`)
           // 6 inch disc
           .attr('r', 0.5 / 2)
+          .attr('class', (d: Disc) => 'disc-' + d.index)
           .style('fill', d => d.color.toLowerCase())
           .style('cursor', 'pointer')
           .call(d3.drag<SVGCircleElement, Disc>()
