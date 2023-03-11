@@ -25,7 +25,7 @@ module.exports = function (config) {
       suppressAll: true // removes the duplicated traces
     },
     coverageReporter: {
-      dir: require('path').join(__dirname, './coverage/shuffleboard-whiteboard'),
+      dir: require('path').join(__dirname, './coverage/shuff-zone'),
       subdir: '.',
       reporters: [
         { type: 'html' },

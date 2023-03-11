@@ -16,16 +16,16 @@ describe('AppComponent', () => {
     expect(app).toBeTruthy();
   });
 
-  it(`should have as title 'shuffleboard-whiteboard'`, () => {
+  it(`should have as title 'shuff-zone'`, () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
-    expect(app.title).toEqual('shuffleboard-whiteboard');
+    expect(app.title).toEqual('shuff-zone');
   });
 
   it('should render title', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('.content span')?.textContent).toContain('shuffleboard-whiteboard app is running!');
+    expect(compiled.querySelector('.content span')?.textContent).toContain('shuff-zone app is running!');
   });
 });

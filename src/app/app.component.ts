@@ -10,7 +10,7 @@ import { CourtComponent } from './court/court.component';
 })
 export class AppComponent implements OnInit {
   @ViewChild('court') court: CourtComponent;
-  title = 'shuffleboard-whiteboard';
+  title = 'shuff-zone';
 
   constructor(
     private matIconRegistry: MatIconRegistry,

@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "shuffleboard-whiteboard": {
+    "shuff-zone": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -20,7 +20,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/shuffleboard-whiteboard",
+            "outputPath": "dist/shuff-zone",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
@@ -73,10 +73,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "shuffleboard-whiteboard:build:production"
+              "browserTarget": "shuff-zone:build:production"
             },
             "development": {
-              "browserTarget": "shuffleboard-whiteboard:build:development"
+              "browserTarget": "shuff-zone:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -84,7 +84,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "shuffleboard-whiteboard:build"
+            "browserTarget": "shuff-zone:build"
           }
         },
         "test": {
@@ -109,5 +109,5 @@
       }
     }
   },
-  "defaultProject": "shuffleboard-whiteboard"
+  "defaultProject": "shuff-zone"
 }
