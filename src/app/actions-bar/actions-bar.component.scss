@@ -1,5 +1,8 @@
 :host {
     background-color: #aaa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 button {
@@ -17,4 +20,6 @@ mat-button-toggle {
 .actions-container {
     display: flex;
     justify-content: space-between;
+    max-width: 500px;
+    flex-grow: 1;
 }
