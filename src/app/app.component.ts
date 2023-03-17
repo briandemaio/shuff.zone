@@ -22,12 +22,12 @@ export class AppComponent implements OnInit {
 
     addCustomIcons() {
       this.matIconRegistry.addSvgIcon(
-        `block_disc`,
-        this.domSanitizer.bypassSecurityTrustResourceUrl('../assets/icons/block.svg')
+        `block_left`,
+        this.domSanitizer.bypassSecurityTrustResourceUrl('../assets/icons/block-left.svg')
       );
       this.matIconRegistry.addSvgIcon(
-        `unblock_disc`,
-        this.domSanitizer.bypassSecurityTrustResourceUrl('../assets/icons/unblock.svg')
+        `block_right`,
+        this.domSanitizer.bypassSecurityTrustResourceUrl('../assets/icons/block-right.svg')
       );
     }
 }

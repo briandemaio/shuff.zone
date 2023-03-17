@@ -17,11 +17,11 @@ export class ActionsBarComponent implements OnInit {
     this.wService.toggleZoom();
   }
 
-  toggleBlockBlack() {
+  toggleBlockLeft() {
     this.wService.toggleSelectedBlockBlack();
   }
 
-  toggleBlockYellow() {
+  toggleBlockRight() {
     this.wService.toggleSelectedBlockYellow();
   }
 
