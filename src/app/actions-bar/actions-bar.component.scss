@@ -28,3 +28,7 @@ mat-button-toggle {
 .right-actions button {
     margin: 0px 4px;
 }
+
+::ng-deep .block-buttons .mat-button-toggle-label-content {
+    line-height: 32px !important;
+}

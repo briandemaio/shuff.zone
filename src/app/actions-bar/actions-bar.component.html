@@ -6,13 +6,17 @@
             (click)="addBlack()"><mat-icon>add_circle</mat-icon></button>
     </div>
     <div *ngIf="wService.selectedDisc">
-        <button matTooltip="Toggle blocking yellow" class="yellow-button" mat-icon-button (click)="toggleBlockYellow()">
-            <mat-icon [svgIcon]="wService.selectedDisc.blockYellow ? 'unblock_disc' : 'block_disc'">
-            </mat-icon>
-        </button>
-        <button matTooltip="Toggle blocking black" class="black-button" mat-icon-button
-            (click)="toggleBlockBlack()"><mat-icon
-                [svgIcon]="wService.selectedDisc.blockBlack ? 'unblock_disc' : 'block_disc'"></mat-icon></button>
+        <mat-button-toggle-group multiple class="block-buttons">
+            <mat-button-toggle matTooltip="Toggle blocking left player" (click)="toggleBlockLeft()">
+                <mat-icon svgIcon="block_left">
+                </mat-icon>
+            </mat-button-toggle>
+            <mat-button-toggle matTooltip="Toggle blocking right player" (click)="toggleBlockRight()">
+                <mat-icon svgIcon="block_right">
+                </mat-icon>
+            </mat-button-toggle>
+        </mat-button-toggle-group>
+
         <button color="warn" mat-icon-button matTooltip="Remove selected disc"
             (click)="removeDisc()"><mat-icon>remove_circle</mat-icon></button>
     </div>
