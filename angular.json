@@ -73,10 +73,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "shuff-zone:build:production"
+              "buildTarget": "shuff-zone:build:production"
             },
             "development": {
-              "browserTarget": "shuff-zone:build:development"
+              "buildTarget": "shuff-zone:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -84,7 +84,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "shuff-zone:build"
+            "buildTarget": "shuff-zone:build"
           }
         },
         "test": {
