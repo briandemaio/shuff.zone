@@ -5,7 +5,7 @@
         <button matTooltip="Add black disc" mat-icon-button class="black-button"
             (click)="addBlack()"><mat-icon>add_circle</mat-icon></button>
     </div>
-    <div *ngIf="wService.selectedDisc">
+    <div class="center-actions" *ngIf="wService.selectedDisc">
         <mat-button-toggle-group multiple class="block-buttons">
             <mat-button-toggle matTooltip="Toggle blocking left player" (click)="toggleBlockLeft()">
                 <mat-icon svgIcon="block_left">
@@ -22,8 +22,8 @@
     </div>
     <div class="right-actions">
         <button matTooltip="Toggle zoom" mat-icon-button (click)="toggleZoom()"><mat-icon>{{wService.zoomState ===
-            'FOOT' ? 'zoom_out' :
-            'zoom_in'}}</mat-icon></button>
+                'FOOT' ? 'zoom_out' :
+                'zoom_in'}}</mat-icon></button>
         <button color="warn" mat-icon-button matTooltip="Clear board"
             (click)="removeAll()"><mat-icon>delete_sweep</mat-icon></button>
     </div>

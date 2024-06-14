@@ -29,6 +29,11 @@ mat-button-toggle {
     margin: 0px 4px;
 }
 
+.center-actions {
+    display: flex;
+    align-items: center;
+}
+
 ::ng-deep .block-buttons .mat-button-toggle-label-content {
     line-height: 32px !important;
 }
