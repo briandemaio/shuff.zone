@@ -1,6 +1,8 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
 import { Disc } from './disc';
+import { ActivatedRoute, Params, Router } from '@angular/router';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Injectable({
   providedIn: 'root'
@@ -20,7 +22,11 @@ export class WhiteboardService {
   // Observable string streams
   discsUpdated$ = this.discsUpdatedSource.asObservable();
   zoomUpdated$ = this.zoomUpdatedSource.asObservable();
-  constructor() {
+
+  private _snackBar = inject(MatSnackBar);
+
+  constructor(private router: Router, private route: ActivatedRoute) {
+    this.route.queryParams.subscribe(params => { this.loadDiscsFromQueryParams(params); });
   }
 
   private discCount(color?: 'YELLOW' | 'BLACK'): number {
@@ -108,5 +114,45 @@ export class WhiteboardService {
 
   get selectedDisc(): Disc | undefined {
     return this.lastSelectedDisc;
+  }
+
+  shareBoard() {
+    this.router.navigate([], { relativeTo: this.route, queryParams: this.getDiscsAsQueryParams() });
+    // copy URL to users clipboard
+    // timeout to fix timing issue where url hasnt changed yet
+    setTimeout(() => {
+      navigator.clipboard.writeText(window.location.href).then(() => {
+        this._snackBar.open('Board shared! URL copied to clipboard.', 'Dismiss', {
+          duration: 3000
+        })
+      });
+    }, 100);
+  }
+
+  getDiscsAsQueryParams(): Params {
+    const discParams: any = {};
+    for (const disc of this.discData) {
+      const discKey = (disc.color === 'YELLOW' ? 'y' : 'b') + disc.index;
+      const minimalDiscInfo = {
+        pX: disc.position[0],
+        pY: disc.position[1]
+      }
+      // discParams[discKey] = btoa(JSON.stringify(minimalDiscInfo));
+      discParams[discKey] = encodeURIComponent(JSON.stringify(minimalDiscInfo));
+    }
+    return discParams;
+  }
+
+  loadDiscsFromQueryParams(params: Params) {
+    this.removeAllDiscs();
+    for (const key in params) {
+      if (params.hasOwnProperty(key)) {
+        // const discInfo = JSON.parse(atob(params[key]));
+        const discInfo = JSON.parse(decodeURIComponent(params[key]));
+        const color = key.startsWith('y') ? 'YELLOW' : 'BLACK';
+        const index = parseInt(key.substring(1), 10);
+        this.addDisc(color, false, false, [discInfo.pX, discInfo.pY]);
+      }
+    }
   }
 }

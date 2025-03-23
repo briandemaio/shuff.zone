@@ -48,4 +48,8 @@ export class ActionsBarComponent implements OnInit {
     this.wService.addDisc('BLACK');
   }
 
+  shareBoard() {
+    this.wService.shareBoard();
+  }
+
 }
