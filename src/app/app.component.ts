@@ -2,11 +2,14 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import { CourtComponent } from './court/court.component';
+import { ActionsBarComponent } from './actions-bar/actions-bar.component';
 
 @Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+    selector: 'app-root',
+    templateUrl: './app.component.html',
+    styleUrls: ['./app.component.scss'],
+    standalone: true,
+    imports: [CourtComponent, ActionsBarComponent]
 })
 export class AppComponent implements OnInit {
   @ViewChild('court') court: CourtComponent;

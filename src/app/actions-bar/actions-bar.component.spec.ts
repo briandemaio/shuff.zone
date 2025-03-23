@@ -8,8 +8,8 @@ describe('ActionsBarComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ ActionsBarComponent ]
-    })
+    imports: [ActionsBarComponent]
+})
     .compileComponents();
   });
 

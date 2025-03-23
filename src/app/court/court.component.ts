@@ -5,9 +5,10 @@ import { Disc } from '../disc';
 import { WhiteboardService } from '../whiteboard.service';
 
 @Component({
-  selector: 'shuff-court',
-  templateUrl: './court.component.html',
-  styleUrls: ['./court.component.scss']
+    selector: 'shuff-court',
+    templateUrl: './court.component.html',
+    styleUrls: ['./court.component.scss'],
+    standalone: true
 })
 export class CourtComponent implements OnInit {
 
