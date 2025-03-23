@@ -117,16 +117,14 @@ export class WhiteboardService {
   }
 
   shareBoard() {
-    this.router.navigate([], { relativeTo: this.route, queryParams: this.getDiscsAsQueryParams() });
-    // copy URL to users clipboard
-    // timeout to fix timing issue where url hasnt changed yet
-    setTimeout(() => {
+    this.router.navigate([], { relativeTo: this.route, queryParams: this.getDiscsAsQueryParams() }).then(() => {
+      // copy URL to users clipboard and show snackbar message
       navigator.clipboard.writeText(window.location.href).then(() => {
         this._snackBar.open('Board shared! URL copied to clipboard.', 'Dismiss', {
           duration: 3000
         })
       });
-    }, 100);
+    });
   }
 
   getDiscsAsQueryParams(): Params {
