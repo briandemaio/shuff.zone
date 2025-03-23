@@ -11,16 +11,11 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AppComponent } from './app/app.component';
+import { appConfig } from './app/app.config';
 
 if (environment.production) {
   enableProdMode();
 }
 
-bootstrapApplication(AppComponent, {
-    providers: [
-        importProvidersFrom(BrowserModule, MatButtonModule, MatButtonToggleModule, MatIconModule, MatTooltipModule),
-        provideHttpClient(withInterceptorsFromDi()),
-        provideAnimations()
-    ]
-})
-  .catch(err => console.error(err));
+bootstrapApplication(AppComponent, appConfig)
+    .catch((err) => console.error(err));
