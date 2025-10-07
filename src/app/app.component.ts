@@ -8,7 +8,6 @@ import { ActionsBarComponent } from './actions-bar/actions-bar.component';
     selector: 'app-root',
     templateUrl: './app.component.html',
     styleUrls: ['./app.component.scss'],
-    standalone: true,
     imports: [CourtComponent, ActionsBarComponent]
 })
 export class AppComponent implements OnInit {
