@@ -17,7 +17,7 @@
               </mat-icon>
             </mat-button-toggle>
           </mat-button-toggle-group>
-          <button color="warn" mat-icon-button matTooltip="Remove selected disc"
+          <button class="red-button" mat-icon-button matTooltip="Remove selected disc"
             (click)="removeDisc()"><mat-icon>remove_circle</mat-icon></button>
           </div>
         }
@@ -25,7 +25,7 @@
           <button matTooltip="Toggle zoom" mat-icon-button (click)="toggleZoom()"><mat-icon>{{wService.zoomState ===
             'FOOT' ? 'zoom_out' :
           'zoom_in'}}</mat-icon></button>
-          <button color="warn" mat-icon-button matTooltip="Clear board"
+          <button class="red-button" mat-icon-button matTooltip="Clear board"
             (click)="removeAll()"><mat-icon>delete_sweep</mat-icon></button>
             <button mat-icon-button matTooltip="Share"
               (click)="shareBoard()"><mat-icon>share</mat-icon></button>
